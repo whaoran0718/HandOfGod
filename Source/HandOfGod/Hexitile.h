@@ -16,7 +16,7 @@ public:
 	// Sets default values for this actor's properties
 	AHexitile();
 
-	void CreateMesh(const TArray<FVector>& vectors, FVector normal = FVector::ZeroVector);
+	void CreateMesh(const TArray<FVector>& vectors);
 
 	void AddNeighbor(AHexitile* neighbor);
 
@@ -24,10 +24,10 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly)
 	UProceduralMeshComponent* TileMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly)
 	TArray<AHexitile*> Neighbors;
 
 public:	

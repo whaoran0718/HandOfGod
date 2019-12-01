@@ -21,7 +21,9 @@ void APlanet::BeginPlay()
 
 	for (auto& tile : sphere->tiles)
 	{
-		AHexitile* hexitile = GetWorld()->SpawnActor<AHexitile>();
+		FActorSpawnParameters parameters;
+		parameters.Owner = this;
+		AHexitile* hexitile = GetWorld()->SpawnActor<AHexitile>(TileBlueprint, parameters);
 		hexitile->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
 		hexitile->CreateMesh(tile.Value->boundary);
 		Tiles.Add(tile.Key->pos, hexitile);

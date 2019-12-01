@@ -20,13 +20,16 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AHexitile> TileBlueprint;
+
 	UPROPERTY(BlueprintReadOnly)
 	TMap<FVector, AHexitile*> Tiles;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Planet)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Radius = 400;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category= Planet)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Subdivision = 10;
 
 public:	

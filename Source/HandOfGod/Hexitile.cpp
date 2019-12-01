@@ -14,29 +14,23 @@ AHexitile::AHexitile()
 	TileMesh->bUseAsyncCooking = true;
 }
 
-void AHexitile::CreateMesh(const TArray<FVector>& vectors, FVector normal)
+void AHexitile::CreateMesh(const TArray<FVector>& vertices)
 {
 	TArray<int32> triangles;
-	for (int i = 1; i < vectors.Num() - 1; i++)
+	for (int i = 1; i < vertices.Num() - 1; i++)
 	{
 		triangles.Push(0);
 		triangles.Push(i);
 		triangles.Push(i + 1);
 	}
 	TArray<FVector> normals;
-	if (normal != FVector::ZeroVector)
-	{
-		normals.Init(normal, vectors.Num());
-	}
-	else
-	{
-		for (int i = 0; i < vectors.Num(); i++)
-			normal += vectors[i];
-		normal.Normalize();
-		normals.Init(normal, vectors.Num());
-	}
+	FVector normal = FVector::ZeroVector;
+	for (int i = 0; i < vertices.Num(); i++)
+		normal += vertices[i];
+	normal.Normalize();
+	normals.Init(normal, vertices.Num());
 
-	TileMesh->CreateMeshSection_LinearColor(0, vectors, triangles, normals, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);
+	TileMesh->CreateMeshSection_LinearColor(0, vertices, triangles, normals, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);
 }
 
 void AHexitile::AddNeighbor(AHexitile * neighbor)
