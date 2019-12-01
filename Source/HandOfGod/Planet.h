@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Hexitile.h"
 #include "Planet.generated.h"
 
 UCLASS()
@@ -18,6 +19,15 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(BlueprintReadOnly)
+	TMap<FVector, AHexitile*> Tiles;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Planet)
+	float Radius = 400;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category= Planet)
+	int32 Subdivision = 10;
 
 public:	
 	// Called every frame
