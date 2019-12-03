@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
 #include "Materials/Material.h"
+#include "Curves/CurveFloat.h"
 #include "Hexitile.h"
 #include "Planet.generated.h"
 
@@ -45,6 +46,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float NoiseScale = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UCurveFloat* TerrainRemapCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector2D PlaneTileRange;
 
 public:	
 	// Called every frame

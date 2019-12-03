@@ -20,19 +20,6 @@ AHexitile::AHexitile()
     population = 0;
 }
 
-AHexitile::AHexitile(TYPE Ttype)
-{
-    PrimaryActorTick.bCanEverTick = true;
-
-    TileMesh = CreateDefaultSubobject<UProceduralMeshComponent>("TileMesh");
-    SetRootComponent(TileMesh);
-    TileMesh->bUseAsyncCooking = true;
-
-    temperature = 20.0;
-    population = 0;
-    terrainType = Ttype;
-}
-
 void AHexitile::CreateMesh(const TArray<FVector>& vertices)
 {
 	TArray<FVector> verWithOrigin = vertices;
@@ -94,7 +81,7 @@ void AHexitile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
     //only updating population for plane terrain
-    if (terrainType == TYPE::plane)
+    if (terrainType == ETerrain::PLANE)
     {
         //update population per 3s
         if (time_acc > 3.f) {

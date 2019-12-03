@@ -44,8 +44,12 @@ void APlanet::BeginPlay()
 
 		FVector posUniform = tile.Key->pos.GetSafeNormal();
 		float noise = USimplexNoiseBPLibrary::SimplexNoise3D(posUniform.X, posUniform.Y, posUniform.Z, NoiseScale);
-		float rate = (noise * 2 - 1) * NoiseVariantion / Radius + 1;
+		if (TerrainRemapCurve)
+			noise = TerrainRemapCurve->GetFloatValue(noise);
+		float rate = noise * NoiseVariantion / Radius + 1;
 		hexitile->SetActorRelativeScale3D(FVector(rate));
+
+		hexitile->terrainType = noise > PlaneTileRange[1] ? ETerrain::MOUNTAIN : (noise < PlaneTileRange[0] ? ETerrain::OCEAN : ETerrain::PLANE);
 	}
 
 	SeaLevel->CreateMeshSection_LinearColor(0, sea_v, sea_t, sea_n, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);

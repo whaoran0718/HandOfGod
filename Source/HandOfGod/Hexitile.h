@@ -11,11 +11,11 @@
 
 //terrain type
 UENUM(BlueprintType)
-enum class TYPE : uint8
+enum class ETerrain : uint8
 {
-    mountain = 0,
-    plane = 1,
-    water = 2
+    MOUNTAIN = 0,
+    PLANE = 1,
+    OCEAN = 2
 };
 
 UCLASS()
@@ -26,7 +26,6 @@ class HANDOFGOD_API AHexitile : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AHexitile();
-    AHexitile(TYPE Ttype);
 
 	void CreateMesh(const TArray<FVector>& vertices);
 
@@ -43,8 +42,8 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int population;
 
-    UPROPERTY(BlueprintReadOnly)
-    TYPE terrainType;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	ETerrain terrainType = ETerrain::PLANE;
 
 protected:
 	// Called when the game starts or when spawned
