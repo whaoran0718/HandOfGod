@@ -3,6 +3,9 @@
 
 #include "Hexitile.h"
 
+const float rate = 1000.f;
+float time_acc = 0.f;
+
 // Sets default values
 AHexitile::AHexitile()
 {
@@ -12,6 +15,22 @@ AHexitile::AHexitile()
 	TileMesh = CreateDefaultSubobject<UProceduralMeshComponent>("TileMesh");
 	SetRootComponent(TileMesh);
 	TileMesh->bUseAsyncCooking = true;
+
+    temperature = 20.0;
+    population = 0;
+}
+
+AHexitile::AHexitile(TYPE Ttype)
+{
+    PrimaryActorTick.bCanEverTick = true;
+
+    TileMesh = CreateDefaultSubobject<UProceduralMeshComponent>("TileMesh");
+    SetRootComponent(TileMesh);
+    TileMesh->bUseAsyncCooking = true;
+
+    temperature = 20.0;
+    population = 0;
+    terrainType = Ttype;
 }
 
 void AHexitile::CreateMesh(const TArray<FVector>& vertices)
@@ -69,7 +88,27 @@ void AHexitile::BeginPlay()
 // Called every frame
 void AHexitile::Tick(float DeltaTime)
 {
+    
+    time_acc += DeltaTime;
+
 	Super::Tick(DeltaTime);
+
+    //only updating population for plane terrain
+    if (terrainType == TYPE::plane)
+    {
+        //update population per 3s
+        if (time_acc > 3.f) {
+            time_acc = 0;
+            population += 5;
+        }
+    }
+
+    //migrate when population reaches the cap on this tile
+    if (population > MAXPOPULATION) Migration();
+}
+
+void AHexitile::Migration()
+{
 
 }
 

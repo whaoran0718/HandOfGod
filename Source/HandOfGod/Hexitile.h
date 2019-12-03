@@ -7,6 +7,17 @@
 #include "ProceduralMeshComponent.h"
 #include "Hexitile.generated.h"
 
+#define MAXPOPULATION 100
+
+//terrain type
+UENUM(BlueprintType)
+enum class TYPE : uint8
+{
+    mountain = 0,
+    plane = 1,
+    water = 2
+};
+
 UCLASS()
 class HANDOFGOD_API AHexitile : public AActor
 {
@@ -15,6 +26,7 @@ class HANDOFGOD_API AHexitile : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AHexitile();
+    AHexitile(TYPE Ttype);
 
 	void CreateMesh(const TArray<FVector>& vertices);
 
@@ -23,6 +35,16 @@ public:
 	TArray<FVector> Vertices;
 	TArray<int> Triangles;
 	TArray<FVector> Normals;
+    void Migration();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float temperature;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int population;
+
+    UPROPERTY(BlueprintReadOnly)
+    TYPE terrainType;
 
 protected:
 	// Called when the game starts or when spawned
