@@ -38,7 +38,9 @@ void APlanet::BeginPlay()
 
 		int stackCount = sea_v.Num();
 		sea_v.Append(hexitile->Vertices);
-		sea_n.Append(hexitile->Normals);
+		for (int i = 0; i < hexitile->Vertices.Num(); i++)
+			sea_n.Add(hexitile->Vertices[i].GetSafeNormal());
+		//sea_n.Append(hexitile->Normals);
 		for (int i = 0; i < hexitile->Triangles.Num(); i++)
 			sea_t.Add(stackCount + hexitile->Triangles[i]);
 
@@ -49,7 +51,7 @@ void APlanet::BeginPlay()
 		float rate = noise * NoiseVariantion / Radius + 1;
 		hexitile->SetActorRelativeScale3D(FVector(rate));
 
-		hexitile->terrainType = noise > PlaneTileRange[1] ? ETerrain::MOUNTAIN : (noise < PlaneTileRange[0] ? ETerrain::OCEAN : ETerrain::PLANE);
+		hexitile->SetTerrainType(noise > PlaneTileRange[1] ? ETerrain::MOUNTAIN : (noise < PlaneTileRange[0] ? ETerrain::OCEAN : ETerrain::PLANE));
 	}
 
 	SeaLevel->CreateMeshSection_LinearColor(0, sea_v, sea_t, sea_n, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);

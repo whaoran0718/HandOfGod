@@ -22,9 +22,8 @@ AHexitile::AHexitile()
 
 void AHexitile::CreateMesh(const TArray<FVector>& vertices)
 {
-	TArray<FVector> verWithOrigin = vertices;
 	TArray<int32> triangles;
-	for (int i = 1; i < verWithOrigin.Num() - 1; i++)
+	for (int i = 1; i < vertices.Num() - 1; i++)
 	{
 		triangles.Push(0);
 		triangles.Push(i);
@@ -33,36 +32,46 @@ void AHexitile::CreateMesh(const TArray<FVector>& vertices)
 
 	TArray<FVector> normals;
 	FVector normal = FVector::ZeroVector;
-	for (int i = 0; i < verWithOrigin.Num(); i++)
-		normal += verWithOrigin[i];
+	for (int i = 0; i < vertices.Num(); i++)
+		normal += vertices[i];
 	normal.Normalize();
-	normals.Init(normal, verWithOrigin.Num());
+	normals.Init(normal, vertices.Num());
 
 	Vertices = vertices;
 	Triangles = triangles;
 	Normals = normals;
 
-	for (int i = 0; i < verWithOrigin.Num(); i++)
+	TArray<FVector> VerRdt = vertices;
+	for (int i = 0; i < Vertices.Num(); i++)
 	{
-		int next = (i + 1) % verWithOrigin.Num();
-		triangles.Push(i);
-		triangles.Push(verWithOrigin.Num());
-		triangles.Push(next);
+		int next = (i + 1) % vertices.Num();
+		VerRdt.Push(vertices[i]);
+		VerRdt.Push(FVector::ZeroVector);
+		VerRdt.Push(vertices[next]);
 
-		FVector n = FVector::CrossProduct(-verWithOrigin[i], verWithOrigin[next]);
+		triangles.Push(VerRdt.Num() - 3);
+		triangles.Push(VerRdt.Num() - 2);
+		triangles.Push(VerRdt.Num() - 1);
+
+		FVector n = -FVector::CrossProduct(-vertices[i], vertices[next]);
 		n.Normalize();
 		normals.Push(n);
 		normals.Push(n);
 		normals.Push(n);
 	}
-	verWithOrigin.Push(FVector::ZeroVector);
 
-	TileMesh->CreateMeshSection_LinearColor(0, verWithOrigin, triangles, normals, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);
+	TileMesh->CreateMeshSection_LinearColor(0, VerRdt, triangles, normals, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);
 }
 
 void AHexitile::AddNeighbor(AHexitile * neighbor)
 {
 	Neighbors.Push(neighbor);
+}
+
+void AHexitile::SetTerrainType(ETerrain type)
+{
+	terrainType = type;
+	SetMaterialBasedOnType();
 }
 
 // Called when the game starts or when spawned

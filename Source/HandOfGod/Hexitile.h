@@ -31,19 +31,14 @@ public:
 
 	void AddNeighbor(AHexitile* neighbor);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetMaterialBasedOnType();
+
+	void SetTerrainType(ETerrain type);
+
 	TArray<FVector> Vertices;
 	TArray<int> Triangles;
 	TArray<FVector> Normals;
-    void Migration();
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float temperature;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int population;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	ETerrain terrainType = ETerrain::MOUNTAIN;
 
 protected:
 	// Called when the game starts or when spawned
@@ -54,6 +49,17 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	TArray<AHexitile*> Neighbors;
+
+	void Migration();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float temperature;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int population;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	ETerrain terrainType = ETerrain::MOUNTAIN;
 
 public:	
 	// Called every frame
