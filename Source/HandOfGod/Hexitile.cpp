@@ -3,6 +3,9 @@
 
 #include "Hexitile.h"
 
+const float rate = 1000.f;
+float time_acc = 0.f;
+
 // Sets default values
 AHexitile::AHexitile()
 {
@@ -12,25 +15,49 @@ AHexitile::AHexitile()
 	TileMesh = CreateDefaultSubobject<UProceduralMeshComponent>("TileMesh");
 	SetRootComponent(TileMesh);
 	TileMesh->bUseAsyncCooking = true;
+
+    temperature = 20.0;
+    population = 0;
 }
 
 void AHexitile::CreateMesh(const TArray<FVector>& vertices)
 {
+	TArray<FVector> verWithOrigin = vertices;
 	TArray<int32> triangles;
-	for (int i = 1; i < vertices.Num() - 1; i++)
+	for (int i = 1; i < verWithOrigin.Num() - 1; i++)
 	{
 		triangles.Push(0);
 		triangles.Push(i);
 		triangles.Push(i + 1);
 	}
+
 	TArray<FVector> normals;
 	FVector normal = FVector::ZeroVector;
-	for (int i = 0; i < vertices.Num(); i++)
-		normal += vertices[i];
+	for (int i = 0; i < verWithOrigin.Num(); i++)
+		normal += verWithOrigin[i];
 	normal.Normalize();
-	normals.Init(normal, vertices.Num());
+	normals.Init(normal, verWithOrigin.Num());
 
-	TileMesh->CreateMeshSection_LinearColor(0, vertices, triangles, normals, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);
+	Vertices = vertices;
+	Triangles = triangles;
+	Normals = normals;
+
+	for (int i = 0; i < verWithOrigin.Num(); i++)
+	{
+		int next = (i + 1) % verWithOrigin.Num();
+		triangles.Push(i);
+		triangles.Push(verWithOrigin.Num());
+		triangles.Push(next);
+
+		FVector n = FVector::CrossProduct(-verWithOrigin[i], verWithOrigin[next]);
+		n.Normalize();
+		normals.Push(n);
+		normals.Push(n);
+		normals.Push(n);
+	}
+	verWithOrigin.Push(FVector::ZeroVector);
+
+	TileMesh->CreateMeshSection_LinearColor(0, verWithOrigin, triangles, normals, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);
 }
 
 void AHexitile::AddNeighbor(AHexitile * neighbor)
@@ -48,7 +75,27 @@ void AHexitile::BeginPlay()
 // Called every frame
 void AHexitile::Tick(float DeltaTime)
 {
+    
+    time_acc += DeltaTime;
+
 	Super::Tick(DeltaTime);
+
+    //only updating population for plane terrain
+    if (terrainType == ETerrain::PLANE)
+    {
+        //update population per 3s
+        if (time_acc > 3.f) {
+            time_acc = 0;
+            population += 5;
+        }
+    }
+
+    //migrate when population reaches the cap on this tile
+    if (population > MAXPOPULATION) Migration();
+}
+
+void AHexitile::Migration()
+{
 
 }
 
