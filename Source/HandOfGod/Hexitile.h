@@ -43,7 +43,7 @@ public:
     int population;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	ETerrain terrainType = ETerrain::PLANE;
+	ETerrain terrainType = ETerrain::MOUNTAIN;
 
 protected:
 	// Called when the game starts or when spawned
