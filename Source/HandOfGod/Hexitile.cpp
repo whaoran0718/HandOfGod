@@ -16,21 +16,42 @@ AHexitile::AHexitile()
 
 void AHexitile::CreateMesh(const TArray<FVector>& vertices)
 {
+	TArray<FVector> verWithOrigin = vertices;
 	TArray<int32> triangles;
-	for (int i = 1; i < vertices.Num() - 1; i++)
+	for (int i = 1; i < verWithOrigin.Num() - 1; i++)
 	{
 		triangles.Push(0);
 		triangles.Push(i);
 		triangles.Push(i + 1);
 	}
+
 	TArray<FVector> normals;
 	FVector normal = FVector::ZeroVector;
-	for (int i = 0; i < vertices.Num(); i++)
-		normal += vertices[i];
+	for (int i = 0; i < verWithOrigin.Num(); i++)
+		normal += verWithOrigin[i];
 	normal.Normalize();
-	normals.Init(normal, vertices.Num());
+	normals.Init(normal, verWithOrigin.Num());
 
-	TileMesh->CreateMeshSection_LinearColor(0, vertices, triangles, normals, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);
+	Vertices = vertices;
+	Triangles = triangles;
+	Normals = normals;
+
+	for (int i = 0; i < verWithOrigin.Num(); i++)
+	{
+		int next = (i + 1) % verWithOrigin.Num();
+		triangles.Push(i);
+		triangles.Push(verWithOrigin.Num());
+		triangles.Push(next);
+
+		FVector n = FVector::CrossProduct(-verWithOrigin[i], verWithOrigin[next]);
+		n.Normalize();
+		normals.Push(n);
+		normals.Push(n);
+		normals.Push(n);
+	}
+	verWithOrigin.Push(FVector::ZeroVector);
+
+	TileMesh->CreateMeshSection_LinearColor(0, verWithOrigin, triangles, normals, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);
 }
 
 void AHexitile::AddNeighbor(AHexitile * neighbor)

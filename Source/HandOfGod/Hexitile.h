@@ -16,9 +16,13 @@ public:
 	// Sets default values for this actor's properties
 	AHexitile();
 
-	void CreateMesh(const TArray<FVector>& vectors);
+	void CreateMesh(const TArray<FVector>& vertices);
 
 	void AddNeighbor(AHexitile* neighbor);
+
+	TArray<FVector> Vertices;
+	TArray<int> Triangles;
+	TArray<FVector> Normals;
 
 protected:
 	// Called when the game starts or when spawned

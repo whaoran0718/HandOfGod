@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ProceduralMeshComponent.h"
 #include "Hexitile.h"
 #include "Planet.generated.h"
 
@@ -26,11 +27,20 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	TMap<FVector, AHexitile*> Tiles;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UProceduralMeshComponent* SeaLevel;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Radius = 400;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Subdivision = 10;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float NoiseVariantion = 20;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float NoiseScale = 1;
 
 public:	
 	// Called every frame
