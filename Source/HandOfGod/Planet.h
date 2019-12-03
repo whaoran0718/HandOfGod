@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
+#include "Materials/Material.h"
 #include "Hexitile.h"
 #include "Planet.generated.h"
 
@@ -29,6 +30,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UProceduralMeshComponent* SeaLevel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterial* SeaMaterial;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Radius = 400;

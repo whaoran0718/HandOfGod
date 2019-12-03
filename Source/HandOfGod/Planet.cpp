@@ -49,6 +49,7 @@ void APlanet::BeginPlay()
 	}
 
 	SeaLevel->CreateMeshSection_LinearColor(0, sea_v, sea_t, sea_n, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);
+	SeaLevel->SetMaterial(0, SeaMaterial);
 
 	for (auto& tile : sphere->tiles)
 	{
