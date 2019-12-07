@@ -38,6 +38,8 @@ public:
 
 	TArray<FVector> Vertices;
 	TArray<int> Triangles;
+
+	UPROPERTY(BlueprintReadWrite)
 	TArray<FVector> Normals;
 
 protected:
