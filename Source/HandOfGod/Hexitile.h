@@ -5,9 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
-#include "Hexitile.generated.h"
-
-#define MAXPOPULATION 100
 
 //terrain type
 UENUM(BlueprintType)
@@ -18,53 +15,31 @@ enum class ETerrain : uint8
     OCEAN = 2
 };
 
-UCLASS()
-class HANDOFGOD_API AHexitile : public AActor
-{
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	AHexitile();
+class HANDOFGOD_API Hexitile
+{	
+public:
+	Hexitile() {}
+	Hexitile(const FVector& _center) 
+		: center(_center), direction(_center.GetSafeNormal()), terrainType(ETerrain::PLANE)
+	{}
 
-	void CreateMesh(const TArray<FVector>& vertices);
+	void CreateMesh(
+		const TArray<FVector>& vertices,
+		TArray<FVector>& outVertices,
+		TArray<int>& outTriangles,
+		TArray<FVector>& outNormals,
+		float scale = 1.f,
+		int offset = 0
+	);
 
-	void AddNeighbor(AHexitile* neighbor);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void SetMaterialBasedOnType();
-
-	void SetTerrainType(ETerrain type);
-
+	// vertex buffer with only tile plane
 	TArray<FVector> Vertices;
 	TArray<int> Triangles;
-
-	UPROPERTY(BlueprintReadWrite)
 	TArray<FVector> Normals;
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	UPROPERTY(BlueprintReadOnly)
-	UProceduralMeshComponent* TileMesh;
-
-	UPROPERTY(BlueprintReadOnly)
-	TArray<AHexitile*> Neighbors;
-
-	void Migration();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float temperature;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int population;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	ETerrain terrainType = ETerrain::MOUNTAIN;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+	// tile parameters
+	ETerrain terrainType;
+	FVector center;
+	FVector direction;
+	TArray<Hexitile*> Neighbors;
 };

@@ -23,15 +23,24 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AHexitile> TileBlueprint;
+	TMap<FVector, Hexitile*> Tiles;
 
-	UPROPERTY(BlueprintReadOnly)
-	TMap<FVector, AHexitile*> Tiles;
+	TArray<FVector> PlaneVertices;
+	TArray<int> PlaneTriangles;
+	TArray<FVector> PlaneNormals;
+	TArray<FLinearColor> PlaneColors;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UProceduralMeshComponent* SeaLevel;
+	UProceduralMeshComponent* HexaMesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterial* MountainTileMaterial;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterial* PlaneTileMaterial;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterial* OceanTileMaterial;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterial* HighlightMaterial;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterial* SeaMaterial;
 
@@ -57,4 +66,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable)
+	int GetMultipleLaunchPlaneCount(const TArray<FVector>& directions, float meterRadius);
+
+	UFUNCTION(BlueprintCallable)
+	int GetSingleLaunchPlaneCount(FVector direction, float meterRadius);
+
+	UFUNCTION(BlueprintCallable)
+	int GetPlaneCount();
 };

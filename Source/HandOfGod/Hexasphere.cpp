@@ -20,7 +20,7 @@ Hexasphere::~Hexasphere()
 
 void Hexasphere::Generate(float sphereRadius, int numDivisions)
 {
-	radius = FMath::Max(100.f, sphereRadius);
+	radius = FMath::Max(0.01f, sphereRadius);
 	numDivisions = FMath::Max(1, numDivisions);
 	float tao = 1.61803399;
 	TArray<HxPoint*> corners;
@@ -94,7 +94,7 @@ void Hexasphere::Generate(float sphereRadius, int numDivisions)
 		delete face;
 }
 
-HxPoint::HxPoint(const FVector& point) : pos(point)
+HxPoint::HxPoint(const FVector& point) : pos(point), dir(point.GetSafeNormal())
 {}
 
 TArray<HxPoint*> HxPoint::GetSubdivide(HxPoint* point, int count, Hexasphere* sphere, bool checkRepeat)
