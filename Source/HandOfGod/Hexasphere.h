@@ -39,6 +39,7 @@ public:
 	TArray<HxFace*> GetOrderedFaces();
 
 	FVector pos;
+	FVector dir;
 	TArray<HxFace*> faces;
 };
 
