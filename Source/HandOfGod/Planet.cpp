@@ -68,10 +68,10 @@ void APlanet::BeginPlay()
 			plane_t.Append(tmp_rock_t);
 			plane_n.Append(tmp_rock_n);
 
-			PlaneVertices.Append(hexitile->Vertices);
 			PlaneNormals.Append(hexitile->Normals);
 			for (int i = 0; i < hexitile->Triangles.Num(); i++)
 				PlaneTriangles.Add(PlaneVertices.Num() + hexitile->Triangles[i]);
+			PlaneVertices.Append(hexitile->Vertices);
 
 			break;
 		}
@@ -82,19 +82,19 @@ void APlanet::BeginPlay()
 			ocean_t.Append(tmp_rock_t);
 			ocean_n.Append(tmp_rock_n);
 
+			for (int i = 0; i < hexitile->Triangles.Num(); i++)
+				sea_t.Add(sea_v.Num() + hexitile->Triangles[i]);
 			for (int i = 0; i < hexitile->Vertices.Num(); i++)
 			{
 				sea_v.Add(hexitile->Vertices[i] / rate);
 				sea_n.Add(hexitile->Vertices[i].GetSafeNormal());
 			}
-			for (int i = 0; i < hexitile->Triangles.Num(); i++)
-				sea_t.Add(sea_v.Num() + hexitile->Triangles[i]);
 			break;
 		}
 		default: break;
 		}
 	}
-	PlaneColors.Init(FLinearColor::Black, PlaneVertices.Num());
+	PlaneColors.Init(FLinearColor::White, PlaneVertices.Num());
 
 	HexaMesh->CreateMeshSection_LinearColor(0, mount_v, mount_t, mount_n, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), false);
 	HexaMesh->CreateMeshSection_LinearColor(1, plane_v, plane_t, plane_n, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), false);
