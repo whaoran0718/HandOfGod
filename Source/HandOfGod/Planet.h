@@ -30,6 +30,9 @@ protected:
 	TArray<FVector> PlaneNormals;
 	TArray<FLinearColor> PlaneColors;
 
+	TMap<Hexitile*, int> PlaneTileBufferOffset;
+	TMap<Hexitile*, float> LaunchPlane;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UProceduralMeshComponent* HexaMesh;
 
@@ -45,7 +48,7 @@ protected:
 	UMaterial* SeaMaterial;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Radius = 400;
+	float Radius = 100;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Subdivision = 10;
@@ -62,15 +65,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector2D PlaneTileRange;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float WarningMaxDistance = 100;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-	int GetMultipleLaunchPlaneCount(const TArray<FVector>& directions, float meterRadius);
-
-	UFUNCTION(BlueprintCallable)
-	int GetSingleLaunchPlaneCount(FVector direction, float meterRadius);
+	int ShowLaunchPlane(FVector position, float meterRadius);
 
 	UFUNCTION(BlueprintCallable)
 	int GetPlaneCount();

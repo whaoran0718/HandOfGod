@@ -68,6 +68,7 @@ void APlanet::BeginPlay()
 			plane_t.Append(tmp_rock_t);
 			plane_n.Append(tmp_rock_n);
 
+			PlaneTileBufferOffset.Add(hexitile, PlaneVertices.Num());
 			PlaneNormals.Append(hexitile->Normals);
 			for (int i = 0; i < hexitile->Triangles.Num(); i++)
 				PlaneTriangles.Add(PlaneVertices.Num() + hexitile->Triangles[i]);
@@ -94,7 +95,7 @@ void APlanet::BeginPlay()
 		default: break;
 		}
 	}
-	PlaneColors.Init(FLinearColor::White, PlaneVertices.Num());
+	PlaneColors.Init(FLinearColor::Black, PlaneVertices.Num());
 
 	HexaMesh->CreateMeshSection_LinearColor(0, mount_v, mount_t, mount_n, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), false);
 	HexaMesh->CreateMeshSection_LinearColor(1, plane_v, plane_t, plane_n, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), false);
@@ -121,43 +122,37 @@ void APlanet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-}
+	for (int i = 0; i < PlaneColors.Num(); i++)
+		PlaneColors[i] = FLinearColor::Black;
 
-int APlanet::GetMultipleLaunchPlaneCount(const TArray<FVector>& directions, float meterRadius)
-{
-	TArray<FVector> relativeDirs;
-	float cosRange = FMath::Sqrt(1 - FMath::Pow(meterRadius / Radius, 2));
-	FQuat invRot = GetActorTransform().GetRotation().Inverse();
-	for (int i = 0; i < directions.Num(); i++)
-		relativeDirs.Add(invRot.RotateVector(directions[i]));
-
-	int planeCount = 0;
-	for (auto& tile : Tiles)
+	for (auto& tile : LaunchPlane)
 	{
-		for (auto dir : relativeDirs)
+		for (int i = 0; i < tile.Key->Vertices.Num(); i++)
 		{
-			if (FVector::DotProduct(tile.Key, dir) < cosRange && tile.Value->terrainType == ETerrain::PLANE)
-			{
-				planeCount++;
-				break;
-			}
+			PlaneColors[i + PlaneTileBufferOffset[tile.Key]] = FLinearColor::White * tile.Value;
 		}
 	}
-	return planeCount;
+	HexaMesh->UpdateMeshSection_LinearColor(3, PlaneVertices, PlaneNormals, TArray<FVector2D>(), PlaneColors, TArray<FProcMeshTangent>());
+	LaunchPlane.Empty();
 }
 
-int APlanet::GetSingleLaunchPlaneCount(FVector direction, float meterRadius)
+int APlanet::ShowLaunchPlane(FVector position, float meterRadius)
 {
 	FVector relativeDir;
 	float cosRange = FMath::Sqrt(1 - FMath::Pow(meterRadius / Radius, 2));
 	FQuat invRot = GetActorTransform().GetRotation().Inverse();
-	relativeDir = invRot.RotateVector(direction);
+	relativeDir = invRot.RotateVector(position.GetSafeNormal());
 
 	int planeCount = 0;
 	for (auto& tile : Tiles)
 	{
-		if (FVector::DotProduct(tile.Key, relativeDir) < cosRange && tile.Value->terrainType == ETerrain::PLANE)
+		float distance = 1 - (position.Size() - Radius) / WarningMaxDistance;
+		if (distance > 0 && FVector::DotProduct(tile.Key, relativeDir) > cosRange && tile.Value->terrainType == ETerrain::PLANE)
 		{
+			if (LaunchPlane.Contains(tile.Value))
+				LaunchPlane[tile.Value] = FMath::Max(distance, LaunchPlane[tile.Value]);
+			else
+				LaunchPlane.Add(tile.Value, distance);
 			planeCount++;
 		}
 	}
