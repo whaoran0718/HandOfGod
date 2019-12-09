@@ -23,20 +23,32 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AHexitile> TileBlueprint;
+	TMap<FVector, Hexitile*> Tiles;
 
-	UPROPERTY(BlueprintReadOnly)
-	TMap<FVector, AHexitile*> Tiles;
+	TArray<FVector> PlaneVertices;
+	TArray<int> PlaneTriangles;
+	TArray<FVector> PlaneNormals;
+	TArray<FLinearColor> PlaneColors;
+
+	TMap<Hexitile*, int> PlaneTileBufferOffset;
+	TMap<Hexitile*, float> LaunchPlane;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UProceduralMeshComponent* SeaLevel;
+	UProceduralMeshComponent* HexaMesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterial* MountainTileMaterial;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterial* PlaneTileMaterial;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterial* OceanTileMaterial;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterial* HighlightMaterial;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterial* SeaMaterial;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Radius = 400;
+	float Radius = 100;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Subdivision = 10;
@@ -53,8 +65,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector2D PlaneTileRange;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float WarningMaxDistance = 100;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable)
+	int ShowLaunchPlane(FVector position, float meterRadius);
+
+	UFUNCTION(BlueprintCallable)
+	int GetPlaneCount();
 };
