@@ -150,7 +150,7 @@ int APlanet::ShowLaunchPlane(FVector position, float meterRadius)
 		if (distance > 0 && FVector::DotProduct(tile.Key, relativeDir) > cosRange && tile.Value->terrainType == ETerrain::PLANE)
 		{
 			if (LaunchPlane.Contains(tile.Value))
-				LaunchPlane[tile.Value] = FMath::Max(distance, LaunchPlane[tile.Value]);
+				LaunchPlane[tile.Value] = FMath::Min(FMath::Max(distance, LaunchPlane[tile.Value]), 1.f);
 			else
 				LaunchPlane.Add(tile.Value, distance);
 			planeCount++;
