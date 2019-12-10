@@ -36,6 +36,6 @@ public:
 	void Enqueue(FRotator rotation);
 
 	UFUNCTION(BlueprintCallable)
-	FRotator GetAverageRotator();
+	void GetAverageRotator(FRotator& rotator, float& angle);
 	
 };

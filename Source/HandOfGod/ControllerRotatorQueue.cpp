@@ -18,6 +18,7 @@ void UControllerRotatorQueue::BeginPlay()
 	Super::BeginPlay();
 
 	count = 0;
+	average = FQuat::Identity;
 }
 
 
@@ -44,15 +45,16 @@ void UControllerRotatorQueue::Enqueue(FRotator rotation)
 		average *= rot.Inverse();
 		count--;
 	}
-	FQuat rot_new = FQuat::Slerp(FQuat::Identity, rotation.Quaternion, 1.0 / MaxFrameCount);
+	FQuat rot_new = FQuat::Slerp(FQuat::Identity, rotation.Quaternion(), 1.0 / MaxFrameCount);
 	queue.Enqueue(rot_new);
 	average = rot_new * average;
 	count++;
 }
 
-FRotator UControllerRotatorQueue::GetAverageRotator()
+void UControllerRotatorQueue::GetAverageRotator(FRotator& rotator, float& angle)
 {
-	return average.Rotator();
+	rotator = average.Rotator();
+	angle = FMath::RadiansToDegrees(average.GetAngle());
 }
 
 
