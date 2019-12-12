@@ -21,15 +21,124 @@ void APlanet::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Spawn();
+}
+
+// Called every frame
+void APlanet::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	for (int i = 0; i < WarningColors.Num(); i++)
+		WarningColors[i] = FLinearColor::Black;
+
+	for (auto& tile : LaunchPlane)
+	{
+		for (int i = 0; i < tile.Key->Vertices.Num(); i++)
+		{
+			WarningColors[i + PlaneTileBufferOffset[tile.Key].Value] = FLinearColor::White * tile.Value;
+		}
+	}
+	HexaMesh->UpdateMeshSection_LinearColor(1, PlaneVertices, PlaneNormals, TArray<FVector2D>(), PlaneColors, TArray<FProcMeshTangent>());
+	HexaMesh->UpdateMeshSection_LinearColor(3, WarningVertices, WarningNormals, TArray<FVector2D>(), WarningColors, TArray<FProcMeshTangent>());
+	LaunchPlane.Reset();
+}
+
+int APlanet::ShowLaunchPlane(FVector position, float meterRadius, bool ruin)
+{
+	FVector relativeDir;
+	float cosRange = FMath::Sqrt(1 - FMath::Pow(meterRadius / Radius, 2));
+	FQuat invRot = GetActorTransform().GetRotation().Inverse();
+	relativeDir = invRot.RotateVector(position.GetSafeNormal());
+
+	int planeCount = 0;
+	for (auto& tile : Tiles)
+	{
+		float distance = 1 - (position.Size() - Radius) / WarningMaxDistance;
+		if (distance > 0 && FVector::DotProduct(tile.Key, relativeDir) > cosRange && tile.Value->terrainType == ETerrain::PLANE)
+		{
+			if (LaunchPlane.Contains(tile.Value))
+				LaunchPlane[tile.Value] = FMath::Min(FMath::Max(distance, LaunchPlane[tile.Value]), 1.f);
+			else
+				LaunchPlane.Add(tile.Value, distance);
+			planeCount++;
+
+			if (ruin)
+			{
+				tile.Value->terrainType = ETerrain::RUINED;
+				PlaneCount--;
+				for (int i = 0; i < tile.Value->Vertices.Num() * 4; i++)
+				{
+					int idx = i + PlaneTileBufferOffset[tile.Value].Key;
+					PlaneVertices[idx] *= (1 - NoiseVariantion / Radius);
+					PlaneColors[idx] = FLinearColor::White;
+				}
+			}
+		}
+	}
+
+	return planeCount;
+}
+
+int APlanet::GetPlaneCount()
+{
+	return Tiles.Num();
+}
+
+void APlanet::Respawn(bool regenerate)
+{
+	if (regenerate)
+	{
+		PlaneCount = 0;
+		for (auto& tile : Tiles)
+		{
+			if (tile.Value->terrainType == ETerrain::RUINED)
+			{
+				for (int i = 0; i < tile.Value->Vertices.Num() * 4; i++)
+				{
+					int idx = i + PlaneTileBufferOffset[tile.Value].Key;
+					PlaneVertices[idx] *= tile.Value->height + 1;
+					PlaneColors[idx] = FLinearColor::Black;
+				}
+				tile.Value->terrainType = ETerrain::PLANE;
+			}
+			if (tile.Value->terrainType == ETerrain::PLANE)
+				PlaneCount++;
+		}
+	}
+	else
+	{
+		for (auto& tile : Tiles)
+		{
+			delete tile.Value;
+		}
+		Tiles.Reset();
+		PlaneVertices.Reset();
+		PlaneTriangles.Reset();
+		PlaneNormals.Reset();
+		PlaneColors.Reset();
+		WarningVertices.Reset();
+		WarningTriangles.Reset();
+		WarningNormals.Reset();
+		WarningColors.Reset();
+
+		PlaneTileBufferOffset.Reset();
+		LaunchPlane.Reset();
+
+		Spawn();
+	}
+}
+
+void APlanet::Spawn()
+{
 	Hexasphere* sphere = new Hexasphere();
 	sphere->Generate(Radius, Subdivision);
+	PlaneCount = 0;
 
 	TArray<FVector> sea_v, sea_n;
 	TArray<int> sea_t;
 	TArray<FVector> mount_v, mount_n;
 	TArray<int> mount_t;
-	TArray<FVector> plane_v, plane_n;
-	TArray<int> plane_t;
 	TArray<FVector> ocean_v, ocean_n;
 	TArray<int> ocean_t;
 	int section = 0;
@@ -53,7 +162,7 @@ void APlanet::BeginPlay()
 
 		switch (hexitile->terrainType)
 		{
-		case ETerrain::MOUNTAIN: 
+		case ETerrain::MOUNTAIN:
 		{
 			hexitile->CreateMesh(tile.Value->boundary, tmp_rock_v, tmp_rock_t, tmp_rock_n, rate, mount_v.Num());
 			mount_v.Append(tmp_rock_v);
@@ -63,16 +172,18 @@ void APlanet::BeginPlay()
 		}
 		case ETerrain::PLANE:
 		{
-			hexitile->CreateMesh(tile.Value->boundary, tmp_rock_v, tmp_rock_t, tmp_rock_n, rate, plane_v.Num());
-			plane_v.Append(tmp_rock_v);
-			plane_t.Append(tmp_rock_t);
-			plane_n.Append(tmp_rock_n);
+			PlaneTileBufferOffset.Add(hexitile, TPair<int, int>(PlaneVertices.Num(), WarningNormals.Num()));
+			hexitile->CreateMesh(tile.Value->boundary, tmp_rock_v, tmp_rock_t, tmp_rock_n, rate, PlaneVertices.Num());
+			PlaneVertices.Append(tmp_rock_v);
+			PlaneTriangles.Append(tmp_rock_t);
+			PlaneNormals.Append(tmp_rock_n);
 
-			PlaneTileBufferOffset.Add(hexitile, PlaneVertices.Num());
-			PlaneNormals.Append(hexitile->Normals);
+			WarningNormals.Append(hexitile->Normals);
 			for (int i = 0; i < hexitile->Triangles.Num(); i++)
-				PlaneTriangles.Add(PlaneVertices.Num() + hexitile->Triangles[i]);
-			PlaneVertices.Append(hexitile->Vertices);
+				WarningTriangles.Add(WarningVertices.Num() + hexitile->Triangles[i]);
+			WarningVertices.Append(hexitile->Vertices);
+
+			PlaneCount++;
 
 			break;
 		}
@@ -83,24 +194,35 @@ void APlanet::BeginPlay()
 			ocean_t.Append(tmp_rock_t);
 			ocean_n.Append(tmp_rock_n);
 
-			for (int i = 0; i < hexitile->Triangles.Num(); i++)
-				sea_t.Add(sea_v.Num() + hexitile->Triangles[i]);
-			for (int i = 0; i < hexitile->Vertices.Num(); i++)
-			{
-				sea_v.Add(hexitile->Vertices[i] / rate);
-				sea_n.Add(hexitile->Vertices[i].GetSafeNormal());
-			}
 			break;
 		}
 		default: break;
 		}
 	}
-	PlaneColors.Init(FLinearColor::Black, PlaneVertices.Num());
+	PlaneColors.Reset(PlaneVertices.Num());
+	for (int i = 0; i < PlaneVertices.Num(); i++)
+		PlaneColors.Push(FLinearColor::Black);
+
+	WarningColors.Reset(WarningVertices.Num());
+	for (int i = 0; i < WarningVertices.Num(); i++)
+		WarningColors.Push(FLinearColor::Black);
+
+	for (auto& tile : Tiles)
+	{
+		for (int i = 0; i < tile.Value->Triangles.Num(); i++)
+			sea_t.Add(sea_v.Num() + tile.Value->Triangles[i]);
+		for (int i = 0; i < tile.Value->Vertices.Num(); i++)
+		{
+			sea_v.Add(tile.Value->Vertices[i] / (tile.Value->height + 1));
+			sea_n.Add(tile.Value->Vertices[i].GetSafeNormal());
+		}
+	}
+
 
 	HexaMesh->CreateMeshSection_LinearColor(0, mount_v, mount_t, mount_n, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), false);
-	HexaMesh->CreateMeshSection_LinearColor(1, plane_v, plane_t, plane_n, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), false);
+	HexaMesh->CreateMeshSection_LinearColor(1, PlaneVertices, PlaneTriangles, PlaneNormals, TArray<FVector2D>(), PlaneColors, TArray<FProcMeshTangent>(), false);
 	HexaMesh->CreateMeshSection_LinearColor(2, ocean_v, ocean_t, ocean_n, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), false);
-	HexaMesh->CreateMeshSection_LinearColor(3, PlaneVertices, PlaneTriangles, PlaneNormals, TArray<FVector2D>(), PlaneColors, TArray<FProcMeshTangent>(), false);
+	HexaMesh->CreateMeshSection_LinearColor(3, WarningVertices, WarningTriangles, WarningNormals, TArray<FVector2D>(), WarningColors, TArray<FProcMeshTangent>(), false);
 	HexaMesh->CreateMeshSection_LinearColor(4, sea_v, sea_t, sea_n, TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), false);
 	HexaMesh->SetMaterial(0, MountainTileMaterial);
 	HexaMesh->SetMaterial(1, PlaneTileMaterial);
@@ -115,52 +237,5 @@ void APlanet::BeginPlay()
 	}
 
 	delete sphere;
-}
-
-// Called every frame
-void APlanet::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	for (int i = 0; i < PlaneColors.Num(); i++)
-		PlaneColors[i] = FLinearColor::Black;
-
-	for (auto& tile : LaunchPlane)
-	{
-		for (int i = 0; i < tile.Key->Vertices.Num(); i++)
-		{
-			PlaneColors[i + PlaneTileBufferOffset[tile.Key]] = FLinearColor::White * tile.Value;
-		}
-	}
-	HexaMesh->UpdateMeshSection_LinearColor(3, PlaneVertices, PlaneNormals, TArray<FVector2D>(), PlaneColors, TArray<FProcMeshTangent>());
-	LaunchPlane.Empty();
-}
-
-int APlanet::ShowLaunchPlane(FVector position, float meterRadius)
-{
-	FVector relativeDir;
-	float cosRange = FMath::Sqrt(1 - FMath::Pow(meterRadius / Radius, 2));
-	FQuat invRot = GetActorTransform().GetRotation().Inverse();
-	relativeDir = invRot.RotateVector(position.GetSafeNormal());
-
-	int planeCount = 0;
-	for (auto& tile : Tiles)
-	{
-		float distance = 1 - (position.Size() - Radius) / WarningMaxDistance;
-		if (distance > 0 && FVector::DotProduct(tile.Key, relativeDir) > cosRange && tile.Value->terrainType == ETerrain::PLANE)
-		{
-			if (LaunchPlane.Contains(tile.Value))
-				LaunchPlane[tile.Value] = FMath::Min(FMath::Max(distance, LaunchPlane[tile.Value]), 1.f);
-			else
-				LaunchPlane.Add(tile.Value, distance);
-			planeCount++;
-		}
-	}
-	return planeCount;
-}
-
-int APlanet::GetPlaneCount()
-{
-	return Tiles.Num();
 }
 
