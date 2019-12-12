@@ -21,7 +21,7 @@ void APlanet::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Spawn();
+	//Spawn();
 }
 
 // Called every frame
