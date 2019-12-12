@@ -12,7 +12,8 @@ enum class ETerrain : uint8
 {
     MOUNTAIN = 0,
     PLANE = 1,
-    OCEAN = 2
+    OCEAN = 2,
+	RUINED = 3
 };
 
 class HANDOFGOD_API Hexitile
@@ -41,5 +42,6 @@ public:
 	ETerrain terrainType;
 	FVector center;
 	FVector direction;
+	float height;
 	TArray<Hexitile*> Neighbors;
 };

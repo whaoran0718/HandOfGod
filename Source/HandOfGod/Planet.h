@@ -29,9 +29,16 @@ protected:
 	TArray<int> PlaneTriangles;
 	TArray<FVector> PlaneNormals;
 	TArray<FLinearColor> PlaneColors;
+	TArray<FVector> WarningVertices;
+	TArray<int> WarningTriangles;
+	TArray<FVector> WarningNormals;
+	TArray<FLinearColor> WarningColors;
 
-	TMap<Hexitile*, int> PlaneTileBufferOffset;
+	TMap<Hexitile*, TPair<int, int>> PlaneTileBufferOffset;
 	TMap<Hexitile*, float> LaunchPlane;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int PlaneCount = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UProceduralMeshComponent* HexaMesh;
@@ -73,8 +80,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-	int ShowLaunchPlane(FVector position, float meterRadius);
+	int ShowLaunchPlane(FVector position, float meterRadius, bool ruin = false);
 
 	UFUNCTION(BlueprintCallable)
 	int GetPlaneCount();
+
+	UFUNCTION(BlueprintCallable)
+	void Respawn(bool regenerate = false);
+
+	void Spawn();
 };

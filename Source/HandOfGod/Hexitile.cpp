@@ -12,6 +12,8 @@ void Hexitile::CreateMesh(
 	int offset
 )
 {
+	height = scale - 1;
+
 	TArray<int32> triangles;
 	for (int i = 1; i < vertices.Num() - 1; i++)
 	{
